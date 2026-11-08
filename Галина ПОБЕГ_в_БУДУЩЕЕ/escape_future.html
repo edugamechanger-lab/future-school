@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Побег в будущее — математический квест</title>
+<style>
+:root{--gold:#ffba43;--navy:#081b38;--sky:#76d9ff;--cream:#fff9e6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#17335a,#060e23 72%);font-family:Arial,Helvetica,sans-serif;color:#fff}
+header{max-width:1350px;margin:0 auto;padding:13px 17px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}header strong{font-size:clamp(17px,2.3vw,25px);color:#ffdb8b}header span{color:#a9cce8;font-size:14px}
+button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.scene-viewport{width:min(100%,1350px);margin:auto;overflow-x:auto;box-shadow:0 15px 55px #0009;border:1px solid #395d8b;border-radius:14px}
+.scene{position:relative;aspect-ratio:1672/941;min-width:760px;background:center/100% 100% no-repeat}.scene.level-1{background-image:url('room.png')}.scene.level-2{background-image:url('room2.png')}.scene.level-3{background-image:url('room3.png');aspect-ratio:1448/1086}.scene.level-4{background-image:url('room4.png')}
+.hotspot{position:absolute;width:7.5%;aspect-ratio:1;border-radius:50%;border:3px solid transparent;background:transparent;transform:translate(-50%,-50%);transition:box-shadow .2s,border-color .2s,background .2s;touch-action:manipulation}
+.hotspot:hover,.hotspot:focus-visible{border-color:#fff5b9;box-shadow:0 0 0 6px #ffba4340,0 0 32px #ffc657;background:#ffcf321d}
+.hotspot.completed{border-color:#71ffb1;background:#0b5e46c9;box-shadow:0 0 23px #37fbaa}
+.hotspot.completed::after{content:'';position:absolute;inset:20%;background: center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m4 12 5 5L20 6' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");filter:drop-shadow(0 1px 3px %23043d27)}
+.hotspot:disabled{cursor:default}
+#task0{left:8.5%;top:55%}#task1{left:72.1%;top:26.2%}#task2{left:50.3%;top:72.5%}#task3{left:87.9%;top:49.1%}
+#door{left:52%;top:52%;width:9%;border-radius:48%;}#door.unlocked{border-color:#8effc1;background:#168b61c7;box-shadow:0 0 30px #46ffc8}
+.scene.level-2 #task0{left:9.5%;top:22%}.scene.level-2 #task1{left:55.1%;top:14.9%}.scene.level-2 #task2{left:55.4%;top:51.4%}.scene.level-2 #task3{left:88.7%;top:43.8%}
+.scene.level-2 #door{left:37%;top:42%;width:9%}.scene.level-2 #door:not(.unlocked){opacity:0;pointer-events:none}.scene.level-2 #door.unlocked{border-color:#85edff;background:#0a4caacc;box-shadow:0 0 20px 8px #56dfffaa}.scene.level-2 
+.scene.level-4 #task0{left:30.8%;top:39.3%;width:6%}.scene.level-4 #task1{left:30.8%;top:60.7%;width:6%}
+.scene.level-4 #task2{left:88.4%;top:39.3%;width:6%}.scene.level-4 #task3{left:88.4%;top:60.7%;width:6%}
+.scene.level-4 #door{left:50%;top:53%;width:13%;height:27%;border-radius:24px;aspect-ratio:auto}
+.scene.level-4 #door:not(.unlocked){border:0;pointer-events:none;opacity:0}
+.scene.level-4 #door.unlocked{border:4px solid #fff3a2;background:#ffbe2530;box-shadow:0 0 40px 18px #ffc14b88, inset 0 0 45px #ffce6b70;animation:portalGlow 2.5s ease-in-out infinite alternate}
+.scene.level-4 #door.unlocked::after{content:'К ВЫБОРУ';top:88%;background:#6c380c;color:#fff2c9}
+.scene.level-4 .progress-overlay{top:9.7%;right:4.8%;width:22%;height:12%;border-color:#77ddff}
+@keyframes portalGlow{from{box-shadow:0 0 20px 7px #ffc14b66,inset 0 0 25px #ffce6b44}to{box-shadow:0 0 45px 22px #ffc14baa,inset 0 0 45px #ffce6b99}}
+.math-palette{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;align-items:center}.math-palette button{border:1px solid #7abbdc;border-radius:9px;padding:6px 13px;background:#24446f;color:white;font-size:22px;min-width:48px;min-height:40px}.math-palette span{font-size:12px;color:#c1dff5;margin-left:4px}
+
+#door.unlocked::after{content:"К УЧИТЕЛЯМ"}
+.scene.level-3 #task0{left:10%;top:44%}.scene.level-3 #task1{left:41.3%;top:51.7%}.scene.level-3 #task2{left:85%;top:50.6%}.scene.level-3 #task3{display:none}
+.scene.level-3 #door{left:48%;top:87%;width:12%}.scene.level-3 #door:not(.unlocked){opacity:0;pointer-events:none}.scene.level-3 #door.unlocked{border-color:#85edff;background:#1545adc9;box-shadow:0 0 28px 9px #56dfffaa}.scene.level-3 
+.scene.level-4 #task0{left:30.8%;top:39.3%;width:6%}.scene.level-4 #task1{left:30.8%;top:60.7%;width:6%}
+.scene.level-4 #task2{left:88.4%;top:39.3%;width:6%}.scene.level-4 #task3{left:88.4%;top:60.7%;width:6%}
+.scene.level-4 #door{left:50%;top:53%;width:13%;height:27%;border-radius:24px;aspect-ratio:auto}
+.scene.level-4 #door:not(.unlocked){border:0;pointer-events:none;opacity:0}
+.scene.level-4 #door.unlocked{border:4px solid #fff3a2;background:#ffbe2530;box-shadow:0 0 40px 18px #ffc14b88, inset 0 0 45px #ffce6b70;animation:portalGlow 2.5s ease-in-out infinite alternate}
+.scene.level-4 #door.unlocked::after{content:'К ВЫБОРУ';top:88%;background:#6c380c;color:#fff2c9}
+.scene.level-4 .progress-overlay{top:9.7%;right:4.8%;width:22%;height:12%;border-color:#77ddff}
+@keyframes portalGlow{from{box-shadow:0 0 20px 7px #ffc14b66,inset 0 0 25px #ffce6b44}to{box-shadow:0 0 45px 22px #ffc14baa,inset 0 0 45px #ffce6b99}}
+.math-palette{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;align-items:center}.math-palette button{border:1px solid #7abbdc;border-radius:9px;padding:6px 13px;background:#24446f;color:white;font-size:22px;min-width:48px;min-height:40px}.math-palette span{font-size:12px;color:#c1dff5;margin-left:4px}
+
+#door.unlocked::after{content:"К ПОРТАЛУ"}
+.scene.level-3 .progress-overlay{right:2%;top:8.6%;width:25%;height:12.5%}
+
+.scene.level-4 #task0{left:30.8%;top:39.3%;width:6%}.scene.level-4 #task1{left:30.8%;top:60.7%;width:6%}
+.scene.level-4 #task2{left:88.4%;top:39.3%;width:6%}.scene.level-4 #task3{left:88.4%;top:60.7%;width:6%}
+.scene.level-4 #door{left:50%;top:53%;width:13%;height:27%;border-radius:24px;aspect-ratio:auto}
+.scene.level-4 #door:not(.unlocked){border:0;pointer-events:none;opacity:0}
+.scene.level-4 #door.unlocked{border:4px solid #fff3a2;background:#ffbe2530;box-shadow:0 0 40px 18px #ffc14b88, inset 0 0 45px #ffce6b70;animation:portalGlow 2.5s ease-in-out infinite alternate}
+.scene.level-4 #door.unlocked::after{content:'К ВЫБОРУ';top:88%;background:#6c380c;color:#fff2c9}
+.scene.level-4 .progress-overlay{top:9.7%;right:4.8%;width:22%;height:12%;border-color:#77ddff}
+@keyframes portalGlow{from{box-shadow:0 0 20px 7px #ffc14b66,inset 0 0 25px #ffce6b44}to{box-shadow:0 0 45px 22px #ffc14baa,inset 0 0 45px #ffce6b99}}
+.math-palette{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;align-items:center}.math-palette button{border:1px solid #7abbdc;border-radius:9px;padding:6px 13px;background:#24446f;color:white;font-size:22px;min-width:48px;min-height:40px}.math-palette span{font-size:12px;color:#c1dff5;margin-left:4px}
+
+#door.unlocked::after{content:'ОТКРЫТЬ';position:absolute;top:95%;left:50%;transform:translateX(-50%);font-size:clamp(10px,1.4vw,19px);font-weight:bold;background:#082a27;padding:6px 9px;border-radius:8px;white-space:nowrap;color:#bcffe2}
+.progress-overlay{position:absolute;right:1.2%;top:1%;width:24.7%;height:14.6%;border:2px solid #89cbfa;border-radius:18px;background:#0b1532;box-shadow:0 0 15px #73cfff99;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;text-align:center}
+.progress-overlay strong{font-size:clamp(12px,1.35vw,22px)}.keys{display:flex;justify-content:center;gap:clamp(5px,1.1vw,22px)}.key{display:inline-flex;width:clamp(17px,2.2vw,33px);height:clamp(17px,2.2vw,33px);color:#cfdef3;opacity:.65}.key.earned{color:#ffd46c;opacity:1;filter:drop-shadow(0 0 6px #ffbc24)}
+.bottom{max-width:1350px;margin:12px auto;padding:0 14px 25px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}.note{font-size:clamp(14px,1.7vw,19px);color:#eaf5ff}.subtle{background:transparent;color:#c9e7ff;border:1px solid #5684bc;border-radius:10px;padding:10px 16px}
+.overlay{position:fixed;inset:0;background:#030918d9;display:none;align-items:center;justify-content:center;padding:17px;z-index:10;overflow-y:auto}.overlay.open{display:flex}
+.dialog{width:min(660px,100%);max-height:95vh;overflow:auto;background:linear-gradient(150deg,#152b54,#07152f);border:2px solid #e9af4f;border-radius:21px;box-shadow:0 0 45px #fdba5055;padding:clamp(18px,3vw,30px)}
+.dialog h2{font-size:clamp(24px,3.5vw,33px);margin:4px 0 9px;color:#ffd58b}.dialog p{line-height:1.55}.tag{font-size:13px;color:#9ed4ff;letter-spacing:.08em;font-weight:bold;text-transform:uppercase}
+.nowrap-math{white-space:nowrap}.question{font-size:clamp(20px,3vw,28px);line-height:1.4;margin:17px 0 20px}.answers{display:flex;flex-direction:column;gap:10px;margin:12px 0}.answers button,.action{border:1px solid #5e8db4;background:#142f57;border-radius:11px;color:white;padding:13px 18px;text-align:left;font-size:17px}.answers button:hover,.action:hover{border-color:#ffcc77;background:#234f80}.answers button.chosen{background:#1c5873;border:2px solid #ffca74}.entry{width:100%;padding:14px;background:#f8fcff;border:2px solid #ffcf7a;border-radius:10px;font-size:21px;color:#091b3d}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.action.primary{background:linear-gradient(#ffcc63,#ef991a);border:0;color:#15223a;font-weight:800}.action:disabled{opacity:.46;cursor:default}
+.feedback{margin-top:16px;border-left:4px solid #ffbd55;padding:14px;background:#213c63;border-radius:8px;line-height:1.5}.feedback.success{border-color:#5af0aa;background:#123f43}.feedback.error{border-color:#ff9782;background:#4d2636}.feedback:empty{display:none}
+small{color:#c2d7ed}.screen-title{text-align:center}.end-actions{text-align:center;margin-top:25px}
+
+/* Approved illustrated title screen: interactive controls over original artwork */
+.intro-screen{position:fixed;inset:0;z-index:21;overflow-y:auto;background:#041027;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 12px;gap:8px}
+.intro-screen[hidden]{display:none}
+.intro-visual{position:relative;width:min(100%,1500px);aspect-ratio:1672/941;background:#071c36 url('intro.png') center/contain no-repeat;flex:none;box-shadow:0 12px 55px #000b}
+.intro-click{position:absolute;display:block;background:transparent;border:0;border-radius:38px;cursor:pointer;color:transparent;font-size:0;z-index:1;touch-action:manipulation}
+.intro-click:hover{box-shadow:inset 0 0 16px #fff6,0 0 18px #ffe3a86e}
+.intro-click:focus-visible{outline:4px solid #fff;outline-offset:4px}
+.intro-start{left:23.5%;top:72.8%;width:31.4%;height:12.5%}
+.intro-reset{left:57.4%;top:74.1%;width:21.7%;height:10.5%}
+.intro-extras{width:min(100%,950px);text-align:center;color:#f8e5ba;font-size:16px}
+.intro-extras[hidden]{display:none}
+.intro-extras button{color:#fff;background:#193e68;border:1px solid #7aceff;border-radius:12px;padding:10px 18px;margin:4px 6px;font-weight:bold}
+.intro-confirm{background:#102a4f;border:1px solid #ebbf77;border-radius:13px;padding:12px;margin:8px auto;max-width:570px;line-height:1.5}
+@media(max-width:650px){.intro-screen{justify-content:flex-start;padding-top:15vh}.intro-visual{min-width:0}.intro-click{border-radius:14px}.intro-start{left:23.5%;top:72.8%;width:31.4%;height:12.5%}.intro-reset{left:57.4%;top:74.1%;width:21.7%;height:10.5%}.intro-extras{font-size:14px}}
+
+@media(max-width:700px){header{padding:10px} .scene-viewport{border-radius:0}.scene{min-width:760px}.progress-overlay strong{font-size:13px}.bottom{padding:8px 12px 24px}.dialog{border-radius:14px}.hotspot{border-width:2px}}
+
+.final-question{font-size:clamp(23px,3.8vw,34px);margin:16px 0 20px;text-align:center;color:#fff}
+.final-intro{color:#c5ddf4;line-height:1.5}
+.final-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
+.final-choices button{min-height:78px;text-align:center;background:#18385f;border:2px solid #6298c6;border-radius:13px;padding:12px;color:#fff;font-size:clamp(19px,2.4vw,25px);font-weight:700}
+.final-choices button.selected{border-color:#ffce68;background:#245975}
+.final-choices button:disabled{opacity:.75;cursor:default}
+.final-reward{margin-top:20px;border:1px solid #e9ba5d;border-radius:15px;padding:18px;background:linear-gradient(135deg,#16365b,#102443)}
+.final-reward video{display:block;max-width:100%;width:100%;border-radius:10px;background:#000;margin-top:16px}
+.final-muted{font-size:14px;color:#b9d9ee;margin-top:10px}
+@media(max-width:500px){.final-choices{grid-template-columns:1fr}}
+
+.fraction{display:inline-flex;vertical-align:middle;flex-direction:column;text-align:center;font-family:Georgia,'Times New Roman',serif;line-height:1.12;font-size:.9em;white-space:nowrap;margin:0 .10em}
+.fraction>span:first-child{border-bottom:2px solid currentColor;padding:0 .18em .08em}
+.fraction>span:last-child{padding-top:.10em}
+.sound-toggle{background:#0b2a52;border:1px solid #73c5ec;border-radius:9px;color:white;padding:9px 14px;font-size:14px}
+.file-alert{max-width:1350px;margin:8px auto;padding:11px 18px;border:2px solid #eab65c;border-radius:12px;background:#54341b;color:#fff;font-weight:600}
+.file-alert[hidden]{display:none}
+.intro-screen{position:fixed;inset:0;z-index:21;overflow-y:auto;background:radial-gradient(ellipse at 50% 10%,#26558b 0,#0b204c 45%,#060c24 100%);display:flex;align-items:center;justify-content:center;padding:20px}
+.intro-screen[hidden]{display:none}
+.intro-card{width:min(740px,100%);text-align:center;padding:clamp(22px,5vw,50px);background:linear-gradient(145deg,#142a53f5,#090f2bf0);border:2px solid #efc37c;border-radius:30px;box-shadow:0 0 75px #4caafa77,0 25px 80px #000a}
+.intro-card h1{color:#ffd58c;font-size:clamp(29px,5vw,53px);letter-spacing:.03em;margin:10px 0 19px;text-shadow:0 0 18px #ffba587a}
+.intro-card p{line-height:1.7;font-size:clamp(17px,2vw,21px);color:#f6f3e9}
+.intro-card .minor{font-size:15px;color:#bcd8f5}
+.intro-buttons{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.intro-buttons button{font-size:19px;padding:14px 25px;border-radius:14px}
+@media(max-width:700px){.scene.level-3{min-width:620px}.scene.level-4{min-width:760px}.scene-viewport{overflow-x:auto}.hotspot{min-width:43px;min-height:43px}}
+</style>
+</head>
+<body>
+<section class="intro-screen" id="introScreen" aria-label="Начало игры">
+  <div class="intro-visual" role="img" aria-label="Побег в будущее. Математический квест для 7 класса. Ты стоишь на пороге школы будущего. Решай задания, переходи на новые уровни, открой портал и сделай свой выбор. В конце пути тебя ждёт награда.">
+    <button type="button" id="beginBtn" class="intro-click intro-start" aria-label="Начать игру" title="Начать игру"></button>
+    <button type="button" id="resetIntroBtn" class="intro-click intro-reset" aria-label="Начать заново" title="Начать заново"></button>
+  </div>
+  <div class="intro-extras" id="introExtras" hidden>
+    <button type="button" id="resumeBtn">Продолжить сохранённое путешествие</button>
+    <div id="introConfirm" class="intro-confirm" hidden></div>
+  </div>
+</section>
+<header><strong id="topTitle">ПОБЕГ В БУДУЩЕЕ · Уровень 1</strong><span>Математика · 7 класс</span><button class="sound-toggle" type="button" id="soundToggle" aria-pressed="true">Звук: включён</button></header><div id="fileAlert" class="file-alert" role="alert" hidden></div>
+<div class="scene-viewport" id="viewport" aria-label="Прокручиваемая игровая сцена">
+ <div class="scene level-1" id="scene">
+  <div class="progress-overlay"><strong id="progressLabel">Ключи: 0 из 4</strong><div class="keys" id="keys"></div></div>
+  <button class="hotspot" id="task0" aria-label="Задание 1 — определения" title="Задание 1. Определения"></button>
+  <button class="hotspot" id="task1" aria-label="Задание 2 — функция" title="Задание 2. Функция"></button>
+  <button class="hotspot" id="task2" aria-label="Задание 3 — уравнение" title="Задание 3. Уравнение"></button>
+  <button class="hotspot" id="task3" aria-label="Задание 4 — неравенство" title="Задание 4. Неравенство"></button>
+  <button class="hotspot" id="door" aria-label="Дверь класса 7Б" title="Дверь класса 7Б"></button>
+ </div>
+</div>
+<div class="bottom"><span class="note" id="status">Нажимай на светящиеся значки, решай задания и собирай ключи.</span><button class="subtle" id="restart">Начать заново</button></div>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog"><div id="dialogBody"></div></div></div>
+<script>
+'use strict';
+const questionsLevel1=[
+ {topic:'Определения',question:'Что представляет собой запись 5x = 12?',choices:['Линейная функция','Линейное уравнение','Линейное неравенство'],correct:1,hints:['Сравни: у функции обычно есть зависимая переменная y, а у неравенства — знак сравнения.','Здесь стоит знак равенства и нужно найти значение x.'],explanation:'Это линейное уравнение. Равенство 5x = 12 содержит неизвестное x, которое нужно найти.'},
+ {topic:'Линейная функция',question:'Найди значение y при x = 5, если y = 3x + 2.',answers:['17','y=17','у=17'],hints:['Подставь число 5 вместо x в формулу.','Сначала вычисли 3 · 5, затем прибавь 2.'],explanation:'y = 3 · 5 + 2 = 15 + 2 = 17.'},
+ {topic:'Линейное уравнение',question:'Реши уравнение: x + 9 = 17.',answers:['8','x=8','х=8'],hints:['Нужно оставить неизвестное x в левой части.','Вычти 9 из обеих частей уравнения.'],explanation:'x = 17 − 9, поэтому x = 8.'},
+ {topic:'Линейное неравенство',question:'Реши неравенство: x + 4 > 9.',answers:['x>5','х>5'],hints:['Вычти одинаковое число из обеих частей неравенства.','Вычти 4. Знак неравенства при этом не изменится.'],explanation:'x + 4 > 9 ⇔ x > 9 − 4 ⇔ x > 5.'}
+];
+const questionsLevel2=[
+ {topic:'Определения и факты',question:'График линейной функции — прямая?',choices:['Да, прямая','Нет, парабола','Нет, окружность'],correct:0,hints:['Вспомни общий вид линейной функции: y = kx + b.','Какую линию образуют точки графика y = 2x + 1?'],explanation:'Да. График линейной функции y = kx + b — прямая.'},
+ {topic:'Линейная функция',question:'Найди значение y при x = −2, если <span class="nowrap-math">y = −4x + 1</span>.',answers:['9','y=9','у=9'],hints:['Подставь x = −2 в формулу.','Произведение −4 · (−2) положительно. Прибавь к нему 1.'],explanation:'y = −4 · (−2) + 1 = 8 + 1 = 9.'},
+ {topic:'Линейное уравнение',question:'Реши уравнение: −3x = 12.',answers:['-4','−4','x=-4','х=-4'],hints:['Найди x, разделив обе части уравнения на коэффициент при x.','Раздели 12 на −3.'],explanation:'x = 12 : (−3) = −4.'},
+ {topic:'Линейное неравенство',question:'Реши неравенство: −2x < 6.',answers:['x>-3','х>-3','x>−3','х>−3'],hints:['При делении обеих частей неравенства на отрицательное число знак меняется на противоположный.','Раздели обе части на −2 и поменяй знак «<» на «>».'],explanation:'Делим обе части на −2 и меняем знак неравенства: x > −3.'}
+];
+const questionsLevel3=[
+ {topic:'Линейная функция · Робот 2020-X',question:'Найди значение функции <span class="nowrap-math">y = 2(3x − 1) + 4</span> при x = 0,5.',answers:['5','5.0','5,0','y=5','у=5'],hints:['Сначала подставь x = 0,5 и вычисли выражение в скобках.','3 · 0,5 − 1 = 0,5. Теперь умножь на 2 и прибавь 4.'],explanation:'При x = 0,5 имеем y = 2 · (3 · 0,5 − 1) + 4 = 2 · 0,5 + 4 = 5.'},
+ {topic:'Линейное уравнение · ИИ 2045',question:'Реши уравнение: <span class="nowrap-math">2(x − 3) + 5 = 11,5</span>.',answers:['6,25','6.25','x=6,25','x=6.25','х=6,25'],hints:['Раскрой скобки, затем приведи подобные слагаемые.','2x − 6 + 5 = 11,5, значит 2x − 1 = 11,5.'],explanation:'2x − 1 = 11,5, значит 2x = 12,5 и x = 6,25.'},
+ {topic:'Линейное неравенство · Человек 2045+',question:'Реши неравенство: <span class="nowrap-math">3(x − 2) ≤ 4,5</span>.',answers:['x≤3,5','х≤3,5','x<=3,5','x<=3.5','х<=3,5','x≤3.5'],hints:['Раскрой скобки в левой части и перенеси постоянное слагаемое вправо.','3x − 6 ≤ 4,5, следовательно 3x ≤ 10,5.'],explanation:'3x − 6 ≤ 4,5 ⇔ 3x ≤ 10,5 ⇔ x ≤ 3,5. При делении на положительное 3 знак не меняется.'}
+];
+const questionsLevel4=[
+ {topic:'Определения · Знания будущего',question:'Прямая <span class="nowrap-math">x = 4</span> параллельна оси Ox?',choices:['Да, параллельна оси Ox','Нет, она параллельна оси Oy','Нет, она совпадает с осью Oy'],correct:1,hints:['У всех точек прямой x = 4 одинаковая первая координата.','Прямая x = 4 вертикальная, как ось Oy.'],explanation:'Нет. Прямая x = 4 вертикальна и параллельна оси Oy, а не Ox.'},
+ {topic:'Линейная функция · Технологии',question:'Как расположены прямые <span class="nowrap-math">y = <span class="fraction"><span>1</span><span>2</span></span>x + 3</span> и <span class="nowrap-math">y = 0,5x − 2</span>?',choices:['Пересекаются','Совпадают','Параллельны'],correct:2,hints:['Сравни коэффициенты при x у обеих прямых.','1/2 = 0,5, а свободные члены 3 и −2 различаются.'],explanation:'У прямых одинаковые угловые коэффициенты 0,5 и разные свободные члены. Поэтому они параллельны.'},
+ {topic:'Линейное уравнение · Исследуй',question:'Реши уравнение: <span class="nowrap-math"><span class="fraction"><span>x + 2</span><span>3</span></span> = <span class="fraction"><span>5 − x</span><span>4</span></span></span>.',answers:['1','x=1','х=1','1.0','1,0'],hints:['Умножь обе части уравнения на наименьшее общее кратное знаменателей.','После умножения на 12 получишь: 4(x + 2) = 3(5 − x).'],explanation:'4x + 8 = 15 − 3x, значит 7x = 7 и x = 1.'},
+ {topic:'Линейное неравенство · Создавай',question:'Реши неравенство: <span class="nowrap-math"><span class="fraction"><span>x + 1</span><span>2</span></span> &gt; <span class="fraction"><span>3 − x</span><span>4</span></span></span>.',answers:['x>1/3','х>1/3','x>⅓','х>⅓','x>0,(3)','х>0,(3)'],hints:['Умножь обе части неравенства на положительное число 4. Знак сохранится.','После умножения: 2(x + 1) > 3 − x. Перенеси слагаемые с x влево.'],explanation:'2x + 2 > 3 − x, значит 3x > 1 и x > 1/3. Приближение 0,333 не является точной границей.'}
+];
+const levels=[questionsLevel1,questionsLevel2,questionsLevel3,questionsLevel4];
+const completedLevels=[[false,false,false,false],[false,false,false,false],[false,false,false],[false,false,false,false]];
+let level=0,current=null,hintCount=0,chosen=null,finalChoice=null,finalSolved=false;
+let soundEnabled=true;
+try{soundEnabled=localStorage.getItem('escape-future-sound')!=='off';}catch(e){}
+const savedKey='escape-future-l1-l2-v1';
+try{const stored=JSON.parse(localStorage.getItem(savedKey));if(stored&&Array.isArray(stored.completedLevels)){finalSolved=stored.finalSolved===true;for(let l=0;l<4;l++)for(let i=0;i<completedLevels[l].length;i++)completedLevels[l][i]=stored.completedLevels[l]?.[i]===true;
+if(stored.level===3&&completedLevels.slice(0,3).every(a=>a.every(Boolean)))level=3;
+else if(stored.level===2&&completedLevels[0].every(Boolean)&&completedLevels[1].every(Boolean))level=2;
+else if(stored.level>=1&&completedLevels[0].every(Boolean))level=1;
+else level=0;}}catch(e){}
+function saveProgress(){try{localStorage.setItem(savedKey,JSON.stringify({level,completedLevels,finalSolved}));}catch(e){}}
+function questions(){return levels[level];}
+function completed(){return completedLevels[level];}
+
+const overlay=document.getElementById('overlay'),body=document.getElementById('dialogBody');
+const iconKey='<svg viewBox="0 0 32 32" width="100%" height="100%" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16 L28 28 M22 22 L25 19 M25 25 L28 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+function normalize(s){return String(s).toLowerCase().replace(/\s+/g,'').replace(/[хХ]/g,'x').replace(/[уУ]/g,'y').replace(/−/g,'-').replace(/,/g,'.');}
+
+function checkImages(){
+ const file=['room.png','room2.png','room3.png','room4.png'][level];
+ const img=new Image();
+ img.onload=()=>{document.getElementById('fileAlert').hidden=true;};
+ img.onerror=()=>{const el=document.getElementById('fileAlert');el.textContent='Не найдена картинка '+file+'. Положи её в ту же папку, что и HTML-файл.';el.hidden=false;};
+ img.src=file;
+}
+function render(){const done=completed(),n=done.filter(Boolean).length;const scene=document.getElementById('scene');scene.classList.toggle('level-1',level===0);scene.classList.toggle('level-2',level===1);scene.classList.toggle('level-3',level===2);scene.classList.toggle('level-4',level===3);document.getElementById('topTitle').textContent='ПОБЕГ В БУДУЩЕЕ · Уровень '+(level+1);document.getElementById('progressLabel').textContent=`Ключи: ${n} из ${done.length}`;document.getElementById('keys').innerHTML=done.map(v=>`<span class="key ${v?'earned':''}">${iconKey}</span>`).join('');done.forEach((v,i)=>{const el=document.getElementById('task'+i);el.classList.toggle('completed',v);el.disabled=v;el.setAttribute('aria-label','Уровень '+(level+1)+', задание '+(i+1)+': '+questions()[i].topic);});for(let i=done.length;i<4;i++){const el=document.getElementById('task'+i);el.classList.remove('completed');el.disabled=true;}document.getElementById('door').classList.toggle('unlocked',n===done.length);document.getElementById('status').textContent=n===done.length?(level===0?'Все ключи собраны! Нажми на замок двери класса 7Б.':level===1?'Все четыре модуля активированы! Нажми на светящийся портал большого экрана.':level===2?'Все три испытания пройдены! Нажми на светящийся портал к следующему уровню.':'Четыре испытания пройдены! Нажми на сияющую дверь для перехода к финальному выбору.'):(level===0?'Нажимай на светящиеся значки, решай задания и собирай ключи.':level===1?'Активируй четыре цифровых модуля и открой путь к учителям.':level===2?'Встреться с тремя наставниками и собери три золотых ключа.':'Реши четыре задания по 400 баллов, чтобы открыть главный портал.');checkImages();document.getElementById('door').setAttribute('aria-label',level===0?'Дверь класса 7Б':level===1?'Портал к учителям':level===2?'Портал к уровню 4':'Главный портал к финальному выбору');}
+function show(html){body.innerHTML=html;overlay.classList.add('open');}
+function close(){overlay.classList.remove('open');current=null;}
+function openTask(i){if(completed()[i])return;current=i;hintCount=0;chosen=null;const q=questions()[i];show(`<div class="tag">Уровень ${level+1} · Задание ${i+1} из ${questions().length} · ${(level+1)*100} баллов</div><h2 id="dialogTitle">${q.topic}</h2><div class="question">${q.question}</div><div id="answerBox"></div><div id="feedback" class="feedback" aria-live="polite"></div><div class="controls"><button class="action primary" id="check">Проверить</button><button class="action" id="hint">Подсказка 1</button><button class="action" id="close">Закрыть</button></div>`);
+ const box=document.getElementById('answerBox');if(q.choices){const wrap=document.createElement('div');wrap.className='answers';q.choices.forEach((s,j)=>{const b=document.createElement('button');b.type='button';b.textContent=`${'АБВ'[j]}. ${s}`;b.addEventListener('click',()=>{chosen=j;wrap.querySelectorAll('button').forEach(x=>x.classList.remove('chosen'));b.classList.add('chosen');});wrap.appendChild(b);});box.appendChild(wrap);}else{box.innerHTML='<input id="answer" class="entry" type="text" inputmode="text" autocomplete="off" placeholder="Введи ответ" aria-label="Ответ"><div class="math-palette" aria-label="Математические знаки"><span>Знаки:</span><button type="button" data-sign="&lt;">&lt;</button><button type="button" data-sign="&gt;">&gt;</button><button type="button" data-sign="≤">≤</button><button type="button" data-sign="≥">≥</button><button type="button" data-sign="/">/</button><span>Дробь пиши через /, например 1/3. Можно также писать &lt;= и &gt;=</span></div>';document.getElementById('answer').addEventListener('keydown',e=>{if(e.key==='Enter')check();});box.querySelectorAll('[data-sign]').forEach(b=>b.addEventListener('click',()=>{const inp=document.getElementById('answer'),pos=inp.selectionStart??inp.value.length;inp.setRangeText(b.dataset.sign,pos,inp.selectionEnd??pos,'end');inp.focus();}));}
+ document.getElementById('check').addEventListener('click',check);document.getElementById('hint').addEventListener('click',hint);document.getElementById('close').addEventListener('click',close);
+}
+function hint(){if(current===null)return;const q=questions()[current];const n=Math.min(hintCount,1);document.getElementById('feedback').className='feedback';document.getElementById('feedback').textContent='Подсказка '+(n+1)+': '+q.hints[n];hintCount++;document.getElementById('hint').textContent=hintCount===1?'Подсказка 2':'Подсказки показаны';document.getElementById('hint').disabled=hintCount>=2;}
+function check(){if(current===null)return;const i=current,q=questions()[i],fb=document.getElementById('feedback');let correct=false;if(q.choices){if(chosen===null){fb.className='feedback error';fb.textContent='Сначала выбери один из вариантов.';return;}correct=chosen===q.correct;}else{const v=document.getElementById('answer').value; if(!v.trim()){fb.className='feedback error';fb.textContent='Введи ответ и попробуй снова.';return;}correct=q.answers.some(a=>normalize(a)===normalize(v));}
+ if(correct){completed()[i]=true;saveProgress();render();makeSound('key');fb.className='feedback success';fb.textContent='Верно! '+q.explanation+' Ты получил золотой ключ!';document.getElementById('check').disabled=true;document.getElementById('hint').disabled=true;const back=document.getElementById('answerBox');back.querySelectorAll('input,button').forEach(x=>x.disabled=true);const closeBtn=document.getElementById('close');closeBtn.textContent=level===0?'Вернуться в коридор':level===1?'Вернуться в класс':level===2?'Вернуться к наставникам':'Вернуться к порталу';}else{fb.className='feedback error';fb.textContent='Пока не получилось. Проверь свой ответ и попробуй снова.'+(hintCount>0?' Твоя последняя подсказка: '+q.hints[Math.min(hintCount-1,1)]: ' Можно открыть подсказку.');}}
+function nextLevel(next){level=next;saveProgress();close();render();document.getElementById('viewport').scrollLeft=0;}
+function door(){
+ if(!completed().every(Boolean)){
+  const place=level===0?'Дверь': 'Портал';
+  show(`<h2 id="dialogTitle">${place} пока закрыт</h2><p>Сначала выполни все ${completed().length} задания этого уровня.</p><div class="controls"><button class="action primary" id="ok">Продолжить</button></div>`);
+  document.getElementById('ok').onclick=close;return;
+ }
+ if(level===0){
+  makeSound('classDoor');
+  show('<div class="tag">Все четыре ключа найдены</div><h2 id="dialogTitle">Дверь класса 7Б открыта!</h2><p>Первый уровень пройден. Четыре задания на 100 баллов выполнены.</p><p>Впереди — класс будущего и четыре цифровых модуля.</p><div class="controls"><button class="action primary" id="goNext">Войти в класс будущего</button><button class="action" id="back">Вернуться в коридор</button></div>');
+  document.getElementById('goNext').onclick=()=>{portalChime();nextLevel(1);};
+ }else if(level===1){
+  show('<div class="tag">Все четыре модуля активированы</div><h2 id="dialogTitle">Портал к учителям открыт!</h2><p>Второй уровень пройден. Ты справился с четырьмя заданиями на 200 баллов.</p><p>Впереди — три наставника и три задания по 300 баллов.</p><div class="controls"><button class="action primary" id="goNext">К трём наставникам</button><button class="action" id="back">Вернуться в класс</button></div>');
+  document.getElementById('goNext').onclick=()=>{portalChime();nextLevel(2);};
+ }else if(level===2){
+  show('<div class="tag">Все три ключа найдены</div><h2 id="dialogTitle">Путь к четвёртому уровню открыт!</h2><p>Ты выполнил три задания по 300 баллов и встретился с тремя наставниками школы будущего.</p><p>Следующая остановка — портал «Ученье — свет» и четыре испытания по 400 баллов.</p><div class="controls"><button class="action primary" id="goNext">К четвёртому уровню</button><button class="action" id="back">Вернуться к наставникам</button></div>');
+  document.getElementById('goNext').onclick=()=>{portalChime();nextLevel(3);};
+ }else{
+  if(finalSolved){showFinalReward();return;}
+  makeSound('portal');
+  show('<div class="tag">Все четыре ключа найдены</div><h2 id="dialogTitle">Портал «Ученье — свет» открыт!</h2><p>Ты справился со всеми четырьмя испытаниями. Впереди — последний вопрос.</p><p>Сделай свой выбор, чтобы открыть награду.</p><div class="controls"><button class="action primary" id="goFinal">К финальному выбору</button><button class="action" id="back">Вернуться к порталу</button></div>');
+  document.getElementById('goFinal').onclick=showFinalChoice;
+ }
+ const back=document.getElementById('back');if(back)back.onclick=close;
+}
+function showFinalChoice(){
+ finalChoice=null;
+ show('<div class="tag">ФИНАЛ · СУПЕРЗАДАНИЕ · 500 БАЛЛОВ</div><h2 id="dialogTitle">СДЕЛАЙТЕ СВОЙ ВЫБОР...</h2><p class="final-intro">Впереди тебя ждёт школа будущего. Для последнего шага понадобится знание математики.</p><div class="final-question">Запишите уравнение оси Ox.</div><div class="final-choices" id="finalChoices"></div><div class="feedback" id="finalFeedback" aria-live="polite"></div><div class="controls"><button class="action primary" id="checkFinal">Проверить выбор</button><button class="action" id="finalHint">Подсказка</button><button class="action" id="back">Вернуться к порталу</button></div>');
+ const choices=['А. x = 0','Б. y = 0','В. (0; 0)','Г. Пока не знаю'];
+ const wrap=document.getElementById('finalChoices');
+ choices.forEach((label,i)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{finalChoice=i;wrap.querySelectorAll('button').forEach(el=>el.classList.remove('selected'));b.classList.add('selected');});wrap.appendChild(b);});
+ document.getElementById('checkFinal').onclick=checkFinalChoice;
+ document.getElementById('finalHint').onclick=()=>finalFeedback('Вспомни: у всех точек оси Ox ордината равна нулю. Как это записать уравнением?',false);
+ document.getElementById('back').onclick=close;
+}
+function finalFeedback(message,wrong){const el=document.getElementById('finalFeedback');el.className='feedback '+(wrong?'error':'');el.textContent=message;}
+function checkFinalChoice(){
+ if(finalChoice===null){finalFeedback('Сначала выбери один вариант ответа.',true);return;}
+ if(finalChoice===3){finalFeedback('Ничего страшного. Вспомни, чем координаты точки отличаются от уравнения прямой. Можешь воспользоваться подсказкой и выбрать ещё раз.',false);return;}
+ if(finalChoice!==1){const detail=finalChoice===0?'Уравнение x = 0 задаёт ось Oy, а нам нужна ось Ox.':'(0; 0) — это координаты одной точки, а не уравнение всей оси.';finalFeedback(detail+' Попробуй ещё раз!',true);return;}
+ finalSolved=true;saveProgress();makeSound('final');showFinalReward();
+}
+function showFinalReward(){
+ show('<div class="tag">Миссия выполнена · Финальный выбор сделан</div><h2 id="dialogTitle">ПОБЕГ В БУДУЩЕЕ — УДАЛСЯ!</h2><p>Верно! <strong>y = 0</strong> — уравнение оси Ox: у каждой её точки ордината равна нулю.</p><p>Ты прошёл четыре уровня, решил математические задачи и открыл путь в школу будущего.</p><div class="final-reward"><h2>Твоя награда — первая серия мультфильма!</h2><p>Знакомься: Витька, ученик школы 2045 года. Его история — о знаниях, учителях и дружбе.</p><video id="rewardVideo" src="seriya1.mp4" controls playsinline preload="metadata">Твой браузер не смог воспроизвести видео.</video><p class="final-muted">Нажми ▶, чтобы посмотреть мультфильм. Если видео не появилось, убедись, что файл seriya1.mp4 находится рядом с HTML.</p></div><div class="controls"><button class="action" id="back">Вернуться к порталу</button></div>');
+ document.getElementById('back').onclick=()=>{const v=document.getElementById('rewardVideo');if(v)v.pause();close();};
+}
+
+// Original, short sound cues generated locally in the browser; no external audio files.
+function makeSound(scene){
+ if(!soundEnabled)return;
+ try{
+  const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  const ctx=new C(),t=ctx.currentTime;
+  if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+  const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-14;limiter.knee.value=8;limiter.ratio.value=4;limiter.attack.value=.004;limiter.release.value=.2;
+  const master=ctx.createGain();master.gain.value=.28;master.connect(limiter);limiter.connect(ctx.destination);
+  let duration=1.4;
+  function tone(f,start,len,vol=.18,type='sine',endFreq=null){
+   const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t+start);
+   if(endFreq)o.frequency.exponentialRampToValueAtTime(endFreq,t+start+len);
+   g.gain.setValueAtTime(.0001,t+start);
+   g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol),t+start+Math.min(.05,len*.18));
+   g.gain.setValueAtTime(Math.max(.0002,vol*.8),t+start+Math.min(.12,len*.35));
+   g.gain.exponentialRampToValueAtTime(.0001,t+start+len);
+   o.connect(g);g.connect(master);o.start(t+start);o.stop(t+start+len+.02);
+  }
+  if(scene==='key'){
+   tone(783.99,0,.22,.11,'sine');tone(1174.66,.10,.38,.09,'sine');duration=.8;
+  }else if(scene==='classDoor'){
+   // Cheerful musical sparkle at the opening of class 7Б (not recorded children's voices).
+   [[523.25,0,.22],[659.25,.14,.24],[783.99,.28,.25],[1046.5,.43,.8]].forEach(([f,a,d])=>tone(f,a,d,.22,'triangle'));
+   tone(523.25,.45,.7,.07,'sine');tone(783.99,.46,.7,.08,'sine');duration=1.6;
+  }else if(scene==='portal'){
+   // Deep rising energy wave, sparkling harmonics and a clear opening accent.
+   tone(72,0,1.95,.32,'sawtooth',215);tone(110,.08,1.85,.18,'triangle',330);
+   [330,440,554.37,659.25].forEach((f,i)=>tone(f,.65+i*.16,1.32-i*.12,.12,'sine'));
+   tone(784,1.42,.65,.25,'triangle',1568);tone(1046.5,1.67,1.05,.25,'sine');
+   tone(1568,1.76,.65,.16,'sine');duration=3;
+  }else if(scene==='final'){
+   // Original short victory cue, separate from the cartoon's soundtrack.
+   [[392,0,.27],[523.25,.22,.27],[659.25,.44,.27],[783.99,.66,.34],[1046.5,.96,1.1]].forEach(([f,a,d])=>tone(f,a,d,.23,'triangle'));
+   [261.63,392,523.25].forEach(f=>tone(f,1.04,1.05,.095,'sine'));
+   tone(1568,1.45,.7,.08,'sine');duration=2.8;
+  }
+  setTimeout(()=>ctx.close().catch(()=>{}),Math.ceil((duration+.35)*1000));
+ }catch(e){}
+}
+
+function portalAwakening(){
+ if(!soundEnabled)return;
+ try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C(),t=ctx.currentTime;
+ const master=ctx.createGain();master.gain.value=.14;master.connect(ctx.destination);
+ const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sawtooth';osc.frequency.setValueAtTime(58,t);osc.frequency.exponentialRampToValueAtTime(145,t+1.25);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.75);g.gain.exponentialRampToValueAtTime(.0001,t+1.9);osc.connect(g);g.connect(master);osc.start(t);osc.stop(t+2);
+ [220,329.63,440,659.25].forEach((f,i)=>{const o=ctx.createOscillator(),v=ctx.createGain();o.type='triangle';o.frequency.value=f;v.gain.setValueAtTime(.0001,t+.65+i*.18);v.gain.exponentialRampToValueAtTime(.25,t+.75+i*.18);v.gain.exponentialRampToValueAtTime(.0001,t+2.2);o.connect(v);v.connect(master);o.start(t+.65+i*.18);o.stop(t+2.25)});
+ setTimeout(()=>ctx.close(),2700);
+ }catch(e){}
+}
+
+function portalChime(){if(!soundEnabled)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C(),t=ctx.currentTime;[523.25,659.25,783.99].forEach((hz,i)=>{const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=hz;g.gain.setValueAtTime(0.0001,t+i*.16);g.gain.exponentialRampToValueAtTime(.07,t+i*.16+.025);g.gain.exponentialRampToValueAtTime(.0001,t+i*.16+.7);osc.connect(g);g.connect(ctx.destination);osc.start(t+i*.16);osc.stop(t+i*.16+.72);});setTimeout(()=>ctx.close(),1600);}catch(e){}}
+
+questionsLevel1.forEach((_,i)=>document.getElementById('task'+i).addEventListener('click',()=>openTask(i)));
+document.getElementById('door').addEventListener('click',door);
+document.getElementById('restart').addEventListener('click',()=>{show('<h2 id="dialogTitle">Начать заново?</h2><p>Все ключи четырёх уровней и итоговый выбор будут сброшены, и задания снова станут доступны.</p><div class="controls"><button class="action primary" id="yes">Да, начать заново</button><button class="action" id="no">Отмена</button></div>');document.getElementById('yes').onclick=()=>{completedLevels.forEach(arr=>arr.fill(false));finalSolved=false;level=0;saveProgress();render();close();document.getElementById('viewport').scrollLeft=0;};document.getElementById('no').onclick=close;});
+
+const soundToggle=document.getElementById('soundToggle');
+function updateSoundToggle(){soundToggle.textContent=soundEnabled?'Звук: включён':'Звук: выключен';soundToggle.setAttribute('aria-pressed',String(soundEnabled));}
+soundToggle.addEventListener('click',()=>{soundEnabled=!soundEnabled;try{localStorage.setItem('escape-future-sound',soundEnabled?'on':'off');}catch(e){}updateSoundToggle();});
+updateSoundToggle();
+const introScreen=document.getElementById('introScreen');
+const hasPriorProgress=completedLevels.some(a=>a.some(Boolean))||finalSolved;
+const introExtras=document.getElementById('introExtras');
+const introConfirm=document.getElementById('introConfirm');
+introExtras.hidden=!hasPriorProgress;
+function resetAllProgress(){completedLevels.forEach(a=>a.fill(false));finalSolved=false;level=0;saveProgress();render();introScreen.hidden=true;document.getElementById('viewport').scrollLeft=0;}
+function askRestart(){if(!hasPriorProgress){resetAllProgress();return;}
+  introExtras.hidden=false;introConfirm.hidden=false;
+  introConfirm.innerHTML='<div>Начать игру с нуля? Все собранные ключи будут сброшены.</div><button type="button" id="confirmIntroReset">Да, начать заново</button><button type="button" id="cancelIntroReset">Отмена</button>';
+  document.getElementById('confirmIntroReset').onclick=resetAllProgress;
+  document.getElementById('cancelIntroReset').onclick=()=>{introConfirm.hidden=true;};
+}
+document.getElementById('beginBtn').addEventListener('click',()=>{if(hasPriorProgress)askRestart();else introScreen.hidden=true;});
+document.getElementById('resetIntroBtn').addEventListener('click',askRestart);
+document.getElementById('resumeBtn').addEventListener('click',()=>{introScreen.hidden=true;});
+render();
+</script>
+</body>
+</html>
